@@ -129,3 +129,50 @@ spaces = int(input("Enter the number of spaces between characters: "))
 
 draw_name(name, spaces)
 
+
+def get_input_from_clipboard():
+    print("Paste your input:")
+    lines = []
+    while True:
+        try:
+            line = input()
+            if line.strip() == "":
+                break
+            lines.append(line)
+        except EOFError:
+            break
+    return lines
+
+# Example usage
+input_lines = get_input_from_clipboard()
+
+# Print the input lines
+for line in input_lines:
+    print(line)
+
+
+
+
+
+
+
+
+import sys
+
+def get_input_from_clipboard():
+    # Read the clipboard contents from sys.stdin
+    clipboard_text = sys.stdin.read()
+    
+    # Split the clipboard text into lines
+    lines = clipboard_text.splitlines()
+    
+    return lines
+
+# Example usage
+input_lines = get_input_from_clipboard()
+
+# Print the input lines
+for line in input_lines:
+    print(line)
+
+
