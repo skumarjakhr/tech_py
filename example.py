@@ -223,3 +223,19 @@ df = pd.read_sql(query, conn)
 print(df)
 
 
+
+import pyodbc
+import pandas as pd
+
+# Configure the ODBC connection string
+conn_str = "DSN=your_hive_odbc_dsn;UID=your_username;PWD=your_password"
+
+# Establish a connection
+conn = pyodbc.connect(conn_str)
+
+# Execute Hive queries using pandas
+query = 'SELECT * FROM your_table'
+df = pd.read_sql(query, conn)
+
+
+
