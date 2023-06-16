@@ -239,3 +239,23 @@ df = pd.read_sql(query, conn)
 
 
 
+
+from impala.dbapi import connect
+import pandas as pd
+
+# Establish a connection to Hive Server 2
+conn = connect(host='your_hive_server_host', port=your_hive_server_port, database='your_database',
+               auth_mechanism='PLAIN', user='your_username', password='your_password')
+
+# Execute Hive queries using pandas
+query = 'SELECT * FROM your_table'
+df = pd.read_sql(query, conn)
+
+# Export the DataFrame to an Excel file
+excel_file = 'data.xlsx'
+df.to_excel(excel_file, index=False)
+
+print(f"Data exported to {excel_file}")
+
+
+
