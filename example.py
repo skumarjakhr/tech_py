@@ -259,3 +259,35 @@ print(f"Data exported to {excel_file}")
 
 
 
+
+
+
+
+
+
+
+import subprocess
+
+# SFTP server details
+sftp_host = 'your_sftp_server_host'
+sftp_username = 'your_sftp_username'
+sftp_password = 'your_sftp_password'
+remote_file_path = '/path/to/cloak-hiveconnector'
+
+# Hive query
+hive_query = 'SELECT * FROM your_table'
+
+# Command to execute the "cloak-hiveconnector" executable with the query
+command = f'sshpass -p "{sftp_password}" sftp -oStrictHostKeyChecking=no {sftp_username}@{sftp_host}:{remote_file_path} ./cloak-hiveconnector -e "{hive_query}"'
+
+# Execute the command and capture the output
+output = subprocess.check_output(command, shell=True)
+
+# Decode the output as per the appropriate encoding (if needed)
+output = output.decode('utf-8')
+
+# Print the output
+print(output)
+
+
+
