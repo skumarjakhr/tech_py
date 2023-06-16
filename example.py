@@ -278,7 +278,7 @@ remote_file_path = '/path/to/cloak-hiveconnector'
 hive_query = 'SELECT * FROM your_table'
 
 # Command to execute the "cloak-hiveconnector" executable with the query
-command = f'sshpass -p "{sftp_password}" sftp -oStrictHostKeyChecking=no {sftp_username}@{sftp_host}:{remote_file_path} ./cloak-hiveconnector -e "{hive_query}"'
+command = f'ssh -p "{sftp_password}" sftp -oStrictHostKeyChecking=no {sftp_username}@{sftp_host}:{remote_file_path} ./cloak-hiveconnector -e "{hive_query}"'
 
 # Execute the command and capture the output
 output = subprocess.check_output(command, shell=True)
@@ -288,6 +288,29 @@ output = output.decode('utf-8')
 
 # Print the output
 print(output)
+
+
+
+import subprocess
+
+# PuTTY session details
+putty_host = 'your_putty_host'
+putty_username = 'your_putty_username'
+putty_password = 'your_putty_password'
+putty_command = 'your_putty_command'
+
+# Construct the plink command
+command = f'plink -ssh {putty_username}@{putty_host} -pw {putty_password} {putty_command}'
+
+# Execute the command and capture the output
+output = subprocess.check_output(command, shell=True)
+
+# Decode the output as per the appropriate encoding (if needed)
+output = output.decode('utf-8')
+
+# Print the output
+print(output)
+
 
 
 
