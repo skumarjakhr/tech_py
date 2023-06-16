@@ -206,3 +206,20 @@ for line in input_lines:
     print(line)
 
 
+
+
+
+from impala.dbapi import connect
+import pandas as pd
+
+# Establish a connection to Hive Server 2
+conn = connect(host='your_hive_server_host', port=your_hive_server_port, database='your_database')
+
+# Execute Hive queries using pandas
+query = 'SELECT * FROM your_table'
+df = pd.read_sql(query, conn)
+
+# Display the DataFrame
+print(df)
+
+
