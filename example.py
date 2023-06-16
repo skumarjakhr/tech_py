@@ -152,6 +152,36 @@ for line in input_lines:
 
 
 
+    from pyhive import hive
+
+# Establish a connection
+conn = hive.Connection(
+    host='your_hive_server_host',
+    port=10000,  # Default Hive Server 2 port
+    username='your_username',
+    password='your_password',
+    database='your_database',
+)
+
+# Create a cursor
+cursor = conn.cursor()
+
+# Execute a query
+query = 'SELECT * FROM your_table'
+cursor.execute(query)
+
+# Fetch the results
+results = cursor.fetchall()
+for row in results:
+    print(row)
+
+# Close the cursor and connection
+cursor.close()
+conn.close()
+
+
+
+
 
 
 
