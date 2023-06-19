@@ -340,5 +340,64 @@ for item in file_dir:
     print(item)
 
 
+import tkinter as tk
+import tkinter.messagebox as msgbox
+import time
+
+def show_timeout_message(message, timeout_seconds):
+    # Create a Tkinter root window
+    root = tk.Tk()
+    root.withdraw()
+
+    # Display the message box with the specified message
+    msgbox.showinfo("Timeout Message", message)
+
+    # Wait for the specified timeout duration
+    time.sleep(timeout_seconds)
+
+    # Close the root window
+    root.destroy()
+
+# Usage example
+message = "This is a timeout message."
+timeout_seconds = 5
+
+show_timeout_message(message, timeout_seconds)
+
+
+
+
+import clr
+clr.AddReference("System.Windows.Forms")
+
+from System.Windows.Forms import MessageBox, MessageBoxButtons, MessageBoxIcon
+
+def show_timeout_message(message, timeout_seconds):
+    # Create a MessageBox instance
+    msg_box = MessageBox()
+
+    # Set the properties of the message box
+    msg_box.Text = "Timeout Message"
+    msg_box.Icon = MessageBoxIcon.Warning
+    msg_box.Buttons = MessageBoxButtons.OK
+    msg_box.DefaultButton = MessageBoxDefaultButton.Button1
+
+    # Display the message box with the specified message
+    msg_box.Show(message)
+
+    # Wait for the specified timeout duration
+    import time
+    time.sleep(timeout_seconds)
+
+    # Close the message box
+    msg_box.Close()
+
+# Usage example
+message = "This is a timeout message."
+timeout_seconds = 5
+
+show_timeout_message(message, timeout_seconds)
+
+
 
 
