@@ -327,5 +327,18 @@ message = f"Hello, {name}!"
 Interaction.MsgBox(message)
 
 
+import clr
+clr.AddReference("System.IO")
+
+from System.IO import File
+
+# Get the list of attributes and methods of the File class
+file_dir = dir(File)
+
+# Print the list
+for item in file_dir:
+    print(item)
+
+
 
 
