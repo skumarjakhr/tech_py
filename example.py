@@ -310,6 +310,21 @@ output = output.decode('utf-8')
 
 # Print the output
 print(output)
+j
+
+
+
+import clr
+clr.AddReference("Microsoft.VisualBasic")
+
+from Microsoft.VisualBasic import Interaction
+
+# Prompt the user to enter their name
+name = Interaction.InputBox("Please enter your name:", "Name Input")
+
+# Display a message with the entered name
+message = f"Hello, {name}!"
+Interaction.MsgBox(message)
 
 
 
