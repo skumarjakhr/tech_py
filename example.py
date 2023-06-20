@@ -399,5 +399,56 @@ timeout_seconds = 5
 show_timeout_message(message, timeout_seconds)
 
 
+import paramiko
+import pandas as pd
+
+# SSH connection details
+hostname = 'your_hostname'
+username = 'your_username'
+password = 'your_password'
+command = 'your_hive_command'
+
+# Establish SSH connection
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(hostname, username=username, password=password)
+
+# Execute Hive command
+stdin, stdout, stderr = ssh.exec_command(command)
+
+# Read output into a Pandas DataFrame
+data = []
+for line in stdout:
+    # Assuming each line of output is a comma-separated row
+    row = line.strip().split(',')
+    data.append(row)
+
+# Close SSH connection
+ssh.close()
+
+# Convert data to DataFrame
+df = pd.DataFrame(data)
+
+# If data is too large, save it in batches to CSV files
+if len(df) > 10000:
+    batch_size = 1000
+    num_batches = len(df) // batch_size + 1
+
+    for i in range(num_batches):
+        start = i * batch_size
+        end = (i + 1) * batch_size
+        batch_df = df[start:end]
+
+        # Save batch DataFrame to a CSV file
+        filename = f'output_batch_{i}.csv'
+        batch_df.to_csv(filename, index=False)
+
+# Alternatively, if data is small, you can process it directly
+else:
+    # Process the DataFrame as needed
+    # ...
+
+
+
 
 
