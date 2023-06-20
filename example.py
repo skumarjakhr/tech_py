@@ -518,3 +518,50 @@ ssh.close()
 
 
 
+import paramiko
+
+# SSH connection details
+hostname = 'your_hostname'
+username = 'your_username'
+password = 'your_password'
+command = 'your_command'
+
+# Establish SSH connection
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(hostname, username=username, password=password)
+
+# Execute the command
+stdin, stdout, stderr = ssh.exec_command(command)
+
+# Read and print the output
+for line in stdout:
+    print(line.strip())
+
+# Check if there were any errors
+error = stderr.read().decode('utf-8')
+if error:
+    print('Error:', error)
+
+# Close the SSH connection
+ssh.close()
+
+
+CREATE EXTERNAL TABLE csv_table
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES (
+  "separatorChar" = ",",
+  "quoteChar" = "\"",
+  "escapeChar" = "\\"
+)
+STORED AS TEXTFILE
+LOCATION '/path/to/csv/file'
+TBLPROPERTIES (
+  "skip.header.line.count" = "1"
+);
+
+SELECT * FROM csv_table;
+
+
+
+
