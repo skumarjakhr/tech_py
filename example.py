@@ -450,5 +450,71 @@ else:
 
 
 
+import paramiko
+
+# SSH connection details
+hostname = 'your_hostname'
+username = 'your_username'
+password = 'your_password'
+command = 'your_command'
+
+# Establish SSH connection
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(hostname, username=username, password=password)
+
+# Open a shell session
+shell = ssh.invoke_shell()
+
+# Execute the command
+shell.send(command + '\n')
+
+# Read and print the output while the command is executing
+while not shell.exit_status_ready():
+    if shell.recv_ready():
+        output = shell.recv(4096).decode('utf-8')
+        print(output, end='')
+
+# Close the shell session and SSH connection
+shell.close()
+ssh.close()
+
+
+import paramiko
+
+# SSH connection details
+hostname = 'your_hostname'
+username = 'your_username'
+password = 'your_password'
+command = 'your_command'
+
+# Establish SSH connection
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(hostname, username=username, password=password)
+
+# Open a shell session
+shell = ssh.invoke_shell()
+
+# Execute the command
+shell.send(command + '\n')
+
+# Read and print the output while the command is executing
+while not shell.exit_status_ready():
+    if shell.recv_ready():
+        output = shell.recv(4096).decode('utf-8')
+        print(output, end='')
+
+# Check the exit status of the shell session
+exit_status = shell.recv_exit_status()
+
+# Print the exit status
+print('Exit Status:', exit_status)
+
+# Close the shell session and SSH connection
+shell.close()
+ssh.close()
+
+
 
 
