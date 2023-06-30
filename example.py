@@ -565,3 +565,772 @@ SELECT * FROM csv_table;
 
 
 
+import tkinter as tk
+from tkinter import ttk
+import sqlite3
+import csv
+import webbrowser
+import os
+
+# Create a connection to the SQLite database
+conn = sqlite3.connect("your_database.db")
+cursor = conn.cursor()
+
+# Function to execute SQL query and fetch results
+def execute_query():
+    query = query_text.get("1.0", tk.END)
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        # Clear existing data in the result_treeview
+        result_treeview.delete(*result_treeview.get_children())
+        # Insert the column names as headings in the result_treeview
+        column_names = [description[0] for description in cursor.description]
+        result_treeview["columns"] = column_names
+        result_treeview.heading("#0", text="Row")
+        for column in column_names:
+            result_treeview.heading(column, text=column)
+        # Insert the data rows in the result_treeview
+        for i, row in enumerate(rows):
+            result_treeview.insert("", tk.END, text=i+1, values=row)
+    except sqlite3.Error as e:
+        result_text.delete("1.0", tk.END)
+        result_text.insert(tk.END, "Error: " + str(e))
+
+# Rest of the code...
+
+# Create a Treeview widget to display the query results
+result_treeview = ttk.Treeview(window)
+result_treeview.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Create a Scrollbar for the result_treeview
+result_scrollbar = tk.Scrollbar(window, orient="vertical", command=result_treeview.yview)
+result_treeview.configure(yscrollcommand=result_scrollbar.set)
+result_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+# Configure the Treeview columns and headings
+result_treeview["columns"] = ("#0", "Column1", "Column2", ...)  # Replace with actual column names
+result_treeview.heading("#0", text="Row")
+result_treeview.column("#0", width=50, anchor="center")
+result_treeview.column("Column1", width=100, anchor="center")
+result_treeview.column("Column2", width=100, anchor="center")
+...
+
+# Rest of the code...
+
+# Start the Tkinter event loop
+window.mainloop()
+
+# Close the database connection
+conn.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import tkinter as tk
+import sqlite3
+import csv
+import webbrowser
+import os
+
+# Create a connection to the SQLite database
+conn = sqlite3.connect("your_database.db")
+cursor = conn.cursor()
+
+# Function to execute SQL query and fetch results
+def execute_query():
+    query = query_text.get("1.0", tk.END)
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        # Display the results in the result_text Text widget
+        result_text.delete("1.0", tk.END)
+        for row in rows:
+            result_text.insert(tk.END, str(row) + "\n")
+    except sqlite3.Error as e:
+        result_text.delete("1.0", tk.END)
+        result_text.insert(tk.END, "Error: " + str(e))
+
+# Function to update the table list in the table_listbox
+def update_table_list():
+    table_listbox.delete(0, tk.END)
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+    for table in tables:
+        table_listbox.insert(tk.END, table[0])
+
+# Function to export the table data to a CSV file
+def export_table():
+    table_name = table_listbox.get(tk.ACTIVE)
+    if not table_name:
+        return
+    filename = table_name + ".csv"
+    cursor.execute("SELECT * FROM " + table_name + ";")
+    rows = cursor.fetchall()
+    with open(filename, "w", newline="") as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow([description[0] for description in cursor.description])
+        csv_writer.writerows(rows)
+    result_text.insert(tk.END, "Table data exported to " + filename + "\n")
+    result_text.insert(tk.END, "File location: " + os.path.abspath(filename) + "\n")
+
+# Function to export the entire table as a CSV file
+def export_entire_table():
+    table_name = table_listbox.get(tk.ACTIVE)
+    if not table_name:
+        return
+    filename = table_name + ".csv"
+    cursor.execute("SELECT * FROM " + table_name + ";")
+    rows = cursor.fetchall()
+    with open(filename, "w", newline="") as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow([description[0] for description in cursor.description])
+        csv_writer.writerows(rows)
+    webbrowser.open_new_tab(os.path.abspath(filename))
+
+# Create the main window
+window = tk.Tk()
+window.title("SQLite Browser")
+
+# Create a Text widget for entering SQL queries
+query_text = tk.Text(window, height=10, width=50)
+query_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Create a Scrollbar for the query_text Text widget
+query_scrollbar = tk.Scrollbar(window)
+query_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+query_text.config(yscrollcommand=query_scrollbar.set)
+query_scrollbar.config(command=query_text.yview)
+
+# Create a Button to execute the query
+execute_button = tk.Button(window, text="Execute", command=execute_query)
+execute_button.pack(side=tk.LEFT)
+
+# Create a Text widget to display the query results
+result_text = tk.Text(window, height=10, width=50)
+result_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Create a Scrollbar for the result_text Text widget
+result_scrollbar = tk.Scrollbar(window)
+result_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+result_text.config(yscrollcommand=result_scrollbar.set)
+result_scrollbar.config(command=result_text.yview)
+
+# Create a Listbox to display the tables in the database
+table_listbox = tk.Listbox(window, height=20)
+table_listbox.pack(side=tk.LEFT, fill=tk.BOTH)
+table_listbox.bind("<Button-3>", lambda e: table_menu.post(e.x_root, e.y_root))
+
+# Create a ContextMenu for the table_listbox
+table_menu = tk.Menu(table_listbox, tearoff=False)
+table_menu.add_command(label="Export Table", command=export_table)
+table_menu.add_command(label="Export Entire Table", command=export_entire_table)
+
+# Update the table list
+update_table_list()
+
+# Start the Tkinter event loop
+window.mainloop()
+
+# Close the database connection
+conn.close()
+
+
+
+
+import tkinter as tk
+import sqlite3
+import csv
+import webbrowser
+
+# Function to execute SQL query and fetch results
+def execute_query():
+    query = query_text.get("1.0", tk.END)
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        # Display the results in the result_text Text widget
+        result_text.delete("1.0", tk.END)
+        for row in rows:
+            result_text.insert(tk.END, str(row) + "\n")
+    except sqlite3.Error as e:
+        result_text.delete("1.0", tk.END)
+        result_text.insert(tk.END, "Error: " + str(e))
+
+# Function to update the table list in the table_listbox
+def update_table_list():
+    table_listbox.delete(0, tk.END)
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+    for table in tables:
+        table_listbox.insert(tk.END, table[0])
+
+# Function to export the table data to a CSV file
+def export_table():
+    table_name = table_listbox.get(tk.ACTIVE)
+    if not table_name:
+        return
+    filename = table_name + ".csv"
+    cursor.execute("SELECT * FROM " + table_name + ";")
+    rows = cursor.fetchall()
+    with open(filename, "w", newline="") as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow([description[0] for description in cursor.description])
+        csv_writer.writerows(rows)
+    result_text.insert(tk.END, "Table data exported to " + filename + "\n")
+    result_text.insert(tk.END, "File location: " + os.path.abspath(filename) + "\n")
+
+# Function to export the entire table as a CSV file
+def export_entire_table():
+    table_name = table_listbox.get(tk.ACTIVE)
+    if not table_name:
+        return
+    filename = table_name + ".csv"
+    cursor.execute("SELECT * FROM " + table_name + ";")
+    rows = cursor.fetchall()
+    with open(filename, "w", newline="") as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow([description[0] for description in cursor.description])
+        csv_writer.writerows(rows)
+    webbrowser.open_new_tab(os.path.abspath(filename))
+
+# Create the main window
+window = tk.Tk()
+window.title("SQLite Browser")
+
+# Create a Text widget for entering SQL queries
+query_text = tk.Text(window, height=10, width=50)
+query_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Create a Scrollbar for the query_text Text widget
+query_scrollbar = tk.Scrollbar(window)
+query_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+query_text.config(yscrollcommand=query_scrollbar.set)
+query_scrollbar.config(command=query_text.yview)
+
+# Create a Button to execute the query
+execute_button = tk.Button(window, text="Execute", command=execute_query)
+execute_button.pack(side=tk.LEFT)
+
+# Create a Text widget to display the query results
+result_text = tk.Text(window, height=10, width=50)
+result_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Create a Scrollbar for the result_text Text widget
+result_scrollbar = tk.Scrollbar(window)
+result_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+result_text.config(yscrollcommand=result_scrollbar.set)
+result_scrollbar.config(command=result_text.yview)
+
+# Create a Listbox to display the tables
+table_listbox = tk.Listbox(window, height=10, width=20)
+table_listbox.pack(side=tk.LEFT, fill=tk.BOTH)
+table_listbox.bind("<Button-3>", lambda e: table_menu.post(e.x_root, e.y_root))
+
+# Create a ContextMenu for the table_listbox
+table_menu = tk.Menu(table_listbox, tearoff=False)
+table_menu.add_command(label="Export Table", command=export_table)
+table_menu.add_command(label="Export Entire Table", command=export_entire_table)
+
+# Update the table list
+update_table_list()
+
+# Start the Tkinter event loop
+window.mainloop()
+
+# Close the database connection
+conn.close()
+
+
+
+
+import tkinter as tk
+import sqlite3
+import csv
+import webbrowser
+
+# Function to execute SQL query and fetch results
+def execute_query():
+    query = query_text.get("1.0", tk.END)
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        # Display the results in the result_text Text widget
+        result_text.delete("1.0", tk.END)
+        for row in rows:
+            result_text.insert(tk.END, str(row) + "\n")
+    except sqlite3.Error as e:
+        result_text.delete("1.0", tk.END)
+        result_text.insert(tk.END, "Error: " + str(e))
+
+# Function to update the table list in the table_listbox
+def update_table_list():
+    table_listbox.delete(0, tk.END)
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+    for table in tables:
+        table_listbox.insert(tk.END, table[0])
+
+# Function to export the table data to a CSV file
+def export_table():
+    table_name = table_listbox.get(tk.ACTIVE)
+    if not table_name:
+        return
+    filename = table_name + ".csv"
+    cursor.execute("SELECT * FROM " + table_name + ";")
+    rows = cursor.fetchall()
+    with open(filename, "w", newline="") as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow([description[0] for description in cursor.description])
+        csv_writer.writerows(rows)
+    result_text.insert(tk.END, "Table data exported to " + filename + "\n")
+    result_text.insert(tk.END, "File location: " + os.path.abspath(filename) + "\n")
+
+# Function to export the entire table as a CSV file
+def export_entire_table():
+    table_name = table_listbox.get(tk.ACTIVE)
+    if not table_name:
+        return
+    filename = table_name + ".csv"
+    cursor.execute("SELECT * FROM " + table_name + ";")
+    rows = cursor.fetchall()
+    with open(filename, "w", newline="") as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow([description[0] for description in cursor.description])
+        csv_writer.writerows(rows)
+    webbrowser.open_new_tab(os.path.abspath(filename))
+
+# Create the main window
+window = tk.Tk()
+window.title("SQLite Browser")
+
+# Create a Text widget for entering SQL queries
+query_text = tk.Text(window, height=10, width=50)
+query_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Create a Scrollbar for the query_text Text widget
+query_scrollbar = tk.Scrollbar(window)
+query_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+query_text.config(yscrollcommand=query_scrollbar.set)
+query_scrollbar.config(command=query_text.yview)
+
+# Create a Button to execute the query
+execute_button = tk.Button(window, text="Execute", command=execute_query)
+execute_button.pack(side=tk.LEFT)
+
+# Create a Text widget to display the query results
+result_text = tk.Text(window, height=10, width=50)
+result_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Create a Scrollbar for the result_text Text widget
+result_scrollbar = tk.Scrollbar(window)
+result_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+result_text.config(yscrollcommand=result_scrollbar.set)
+result_scrollbar.config(command=result_text.yview)
+
+# Create a Listbox to display the tables
+table_listbox = tk.Listbox(window, height=10, width=20)
+table_listbox.pack(side=tk.LEFT, fill=tk.BOTH)
+table_listbox.bind("<Button-3>", lambda e: table_menu.post(e.x_root, e.y_root))
+
+# Create a ContextMenu for the table_listbox
+table_menu = tk.Menu(table_listbox, tearoff=False)
+table_menu.add_command(label="Export Table", command=export_table)
+table_menu.add_command(label="Export Entire Table", command=export_entire_table)
+
+# Update the table list
+update_table_list()
+
+# Start the Tkinter event loop
+window.mainloop()
+
+# Close the database connection
+conn.close()
+
+
+import tkinter as tk
+import sqlite3
+import csv
+
+# Function to execute SQL query and fetch results
+def execute_query():
+    query = query_text.get("1.0", tk.END)
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        # Display the results in the result_text Text widget
+        result_text.delete("1.0", tk.END)
+        for row in rows:
+            result_text.insert(tk.END, str(row) + "\n")
+    except sqlite3.Error as e:
+        result_text.delete("1.0", tk.END)
+        result_text.insert(tk.END, "Error: " + str(e))
+
+# Function to update the table list in the table_listbox
+def update_table_list():
+    table_listbox.delete(0, tk.END)
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+    for table in tables:
+        table_listbox.insert(tk.END, table[0])
+
+# Function to export the table data to a CSV file
+def export_table():
+    table_name = table_listbox.get(tk.ACTIVE)
+    if not table_name:
+        return
+    filename = table_name + ".csv"
+    cursor.execute("SELECT * FROM " + table_name + " LIMIT 100;")
+    rows = cursor.fetchall()
+    with open(filename, "w", newline="") as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow([description[0] for description in cursor.description])
+        csv_writer.writerows(rows)
+    result_text.insert(tk.END, "Table data exported to " + filename + "\n")
+
+# Create the main window
+window = tk.Tk()
+window.title("SQLite Browser")
+
+# Create a Text widget for entering SQL queries
+query_text = tk.Text(window, height=10, width=50)
+query_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Create a Scrollbar for the query_text Text widget
+query_scrollbar = tk.Scrollbar(window)
+query_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+query_text.config(yscrollcommand=query_scrollbar.set)
+query_scrollbar.config(command=query_text.yview)
+
+# Create a Button to execute the query
+execute_button = tk.Button(window, text="Execute", command=execute_query)
+execute_button.pack(side=tk.LEFT)
+
+# Create a Text widget to display the query results
+result_text = tk.Text(window, height=10, width=50)
+result_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Create a Scrollbar for the result_text Text widget
+result_scrollbar = tk.Scrollbar(window)
+result_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+result_text.config(yscrollcommand=result_scrollbar.set)
+result_scrollbar.config(command=result_text.yview)
+
+# Create a Listbox to display the tables
+table_listbox = tk.Listbox(window, height=10, width=20)
+table_listbox.pack(side=tk.LEFT, fill=tk.BOTH)
+
+# Create a Button to export table data to CSV
+export_button = tk.Button(window, text="Export Table", command=export_table)
+export_button.pack(side=tk.LEFT)
+
+# Create a context menu for the table_listbox
+table_menu = tk.Menu(window, tearoff=False)
+table_menu.add_command(label="View Top 100 Lines", command=export_table)
+
+# Function to handle right-click on table_listbox
+def show_table_menu(event):
+    table_menu.post(event.x_root, event.y_root)
+
+# Bind right-click event to the table_listbox
+table_listbox.bind("<Button-3>", show_table_menu)
+
+# Connect to the SQLite database
+conn = sqlite3.connect("your_database.db")
+cursor = conn.cursor()
+
+# Update the table list
+update_table_list()
+
+# Start the Tkinter event loop
+window.mainloop()
+
+# Close the database connection
+conn.close()
+
+
+
+
+import tkinter as tk
+import sqlite3
+import csv
+
+# Function to execute SQL query and fetch results
+def execute_query():
+    query = query_text.get("1.0", tk.END)
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        # Display the results in the result_text Text widget
+        result_text.delete("1.0", tk.END)
+        for row in rows:
+            result_text.insert(tk.END, str(row) + "\n")
+            
+        # Update the table list in the table_listbox
+        update_table_list()
+    except sqlite3.Error as e:
+        result_text.delete("1.0", tk.END)
+        result_text.insert(tk.END, "Error: " + str(e))
+
+# Function to update the table list in the table_listbox
+def update_table_list():
+    table_listbox.delete(0, tk.END)
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+    for table in tables:
+        table_listbox.insert(tk.END, table[0])
+
+# Function to export the table data to a CSV file
+def export_table():
+    table_name = table_listbox.get(tk.ACTIVE)
+    if not table_name:
+        return
+    filename = table_name + ".csv"
+    cursor.execute("SELECT * FROM " + table_name + ";")
+    rows = cursor.fetchall()
+    with open(filename, "w", newline="") as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow([description[0] for description in cursor.description])
+        csv_writer.writerows(rows)
+    result_text.insert(tk.END, "Table data exported to " + filename + "\n")
+
+# Create the main window
+window = tk.Tk()
+window.title("SQLite Browser")
+
+# Create a Text widget for entering SQL queries
+query_text = tk.Text(window, height=10, width=50)
+query_text.pack()
+
+# Create a Button to execute the query
+execute_button = tk.Button(window, text="Execute", command=execute_query)
+execute_button.pack()
+
+# Create a Text widget to display the query results
+result_text = tk.Text(window, height=10, width=50)
+result_text.pack()
+
+# Create a Listbox to display the tables
+table_listbox = tk.Listbox(window, height=10, width=50)
+table_listbox.pack()
+
+# Create a Button to export table data to CSV
+export_button = tk.Button(window, text="Export Table", command=export_table)
+export_button.pack()
+
+# Connect to the SQLite database
+conn = sqlite3.connect("your_database.db")
+cursor = conn.cursor()
+
+# Update the table list
+update_table_list()
+
+# Start the Tkinter event loop
+window.mainloop()
+
+# Close the database connection
+conn.close()
+
+
+import tkinter as tk
+import sqlite3
+
+# Function to execute SQL query and fetch results
+def execute_query():
+    query = query_text.get("1.0", tk.END)
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        # Display the results in the result_text Text widget
+        result_text.delete("1.0", tk.END)
+        for row in rows:
+            result_text.insert(tk.END, str(row) + "\n")
+    except sqlite3.Error as e:
+        result_text.delete("1.0", tk.END)
+        result_text.insert(tk.END, "Error: " + str(e))
+
+# Create the main window
+window = tk.Tk()
+window.title("SQLite Browser")
+
+# Create a Text widget for entering SQL queries
+query_text = tk.Text(window, height=10, width=50)
+query_text.pack()
+
+# Create a Button to execute the query
+execute_button = tk.Button(window, text="Execute", command=execute_query)
+execute_button.pack()
+
+# Create a Text widget to display the query results
+result_text = tk.Text(window, height=10, width=50)
+result_text.pack()
+
+# Connect to the SQLite database
+conn = sqlite3.connect("your_database.db")
+cursor = conn.cursor()
+
+# Start the Tkinter event loop
+window.mainloop()
+
+# Close the database connection
+conn.close()
+
+
+
+import tkinter as tk
+import sqlite3
+import csv
+
+# Function to execute the SQL query
+def execute_query():
+    query = query_text.get("1.0", tk.END).strip()
+    if query:
+        try:
+            cursor.execute(query)
+            result = cursor.fetchall()
+            if result:
+                result_text.delete("1.0", tk.END)
+                for row in result:
+                    result_text.insert(tk.END, str(row) + "\n")
+        except sqlite3.Error as e:
+            result_text.delete("1.0", tk.END)
+            result_text.insert(tk.END, "Error: " + str(e))
+
+# Function to export query results to CSV
+def export_to_csv():
+    query = query_text.get("1.0", tk.END).strip()
+    if query:
+        try:
+            cursor.execute(query)
+            result = cursor.fetchall()
+            if result:
+                with open("output.csv", "w", newline="") as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerows(result)
+                result_text.delete("1.0", tk.END)
+                result_text.insert(tk.END, "Query results exported to output.csv")
+        except sqlite3.Error as e:
+            result_text.delete("1.0", tk.END)
+            result_text.insert(tk.END, "Error: " + str(e))
+
+# Create the main window
+window = tk.Tk()
+window.title("SQLite Client")
+
+# Create and connect to the database
+conn = sqlite3.connect("database.db")
+cursor = conn.cursor()
+
+# Function to retrieve table names from the database
+def get_table_names():
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+    return [table[0] for table in tables]
+
+# Create a dropdown menu for table selection
+table_names = get_table_names()
+table_var = tk.StringVar()
+table_var.set(table_names[0])
+table_dropdown = tk.OptionMenu(window, table_var, *table_names)
+table_dropdown.pack()
+
+# Function to retrieve column names for a given table
+def get_column_names(table_name):
+    cursor.execute(f"PRAGMA table_info({table_name});")
+    columns = cursor.fetchall()
+    return [column[1] for column in columns]
+
+# Create a table column listbox
+column_listbox = tk.Listbox(window)
+column_listbox.pack()
+
+# Function to update the column listbox based on the selected table
+def update_column_listbox(*args):
+    table_name = table_var.get()
+    column_names = get_column_names(table_name)
+    column_listbox.delete(0, tk.END)
+    for column in column_names:
+        column_listbox.insert(tk.END, column)
+
+# Bind the table dropdown to update the column listbox
+table_var.trace("w", update_column_listbox)
+
+# Create a text area for entering SQL queries
+query_text = tk.Text(window, height=6)
+query_text.pack()
+
+# Create a button to execute the query
+execute_button = tk.Button(window, text="Execute", command=execute_query)
+execute_button.pack()
+
+# Create a button to export query results to CSV
+export_button = tk.Button(window, text="Export to CSV", command=export_to_csv)
+export_button.pack()
+
+# Create a text area to display the query results
+result_text = tk.Text(window, height=10)
+result_text.pack()
+
+# Start the Tkinter event loop
+window.mainloop()
+
+
+
+
+import tkinter as tk
+import sqlite3
+
+# Function to execute the SQL query
+def execute_query():
+    query = query_text.get("1.0", tk.END).strip()
+    if query:
+        try:
+            cursor.execute(query)
+            result = cursor.fetchall()
+            if result:
+                result_text.delete("1.0", tk.END)
+                for row in result:
+                    result_text.insert(tk.END, str(row) + "\n")
+        except sqlite3.Error as e:
+            result_text.delete("1.0", tk.END)
+            result_text.insert(tk.END, "Error: " + str(e))
+
+# Create the main window
+window = tk.Tk()
+window.title("SQLite Client")
+
+# Create and connect to the database
+conn = sqlite3.connect("database.db")
+cursor = conn.cursor()
+
+# Create a text area for entering SQL queries
+query_text = tk.Text(window, height=6)
+query_text.pack()
+
+# Create a button to execute the query
+execute_button = tk.Button(window, text="Execute", command=execute_query)
+execute_button.pack()
+
+# Create a text area to display the query results
+result_text = tk.Text(window, height=10)
+result_text.pack()
+
+# Start the Tkinter event loop
+window.mainloop()
+
+
+
+
+
+
