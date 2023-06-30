@@ -1334,3 +1334,122 @@ window.mainloop()
 
 
 
+import tkinter as tk
+from tkinter import messagebox
+import sqlite3
+import csv
+import pandas as pd
+from pandastable import Table
+
+conn = sqlite3.connect("mydatabase.db")
+cursor=conn.cursor()
+
+def connect_to_database():
+    """Connect to the SQLite database."""
+    try:
+        db_path = db_path_entry.get()
+        conn = sqlite3.connect(db_path)
+        messagebox.showinfo("Success", "Connected to the database successfully.")
+        return conn, conn.cursor()
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"Failed to connect to the database:\n{str(e)}")
+        return None, None
+
+def execute_query():
+    """Execute the SQL query and display the results."""
+    query = query_text.get(1.0, tk.END).strip()
+
+    try:
+        cursor.execute(query)
+        result = cursor.fetchall()
+        column_names = [desc[0] for desc in cursor.description]
+
+        if result:
+            result_frame.destroy()
+            result_frame = tk.Frame(root)
+            result_frame.grid(row=2, column=1, sticky="nsew")
+
+            table = Table(result_frame, dataframe=pd.DataFrame(result, columns=column_names))
+            table.show()
+
+            export_button = tk.Button(root, text="Export", command=lambda: export_to_csv(result, column_names))
+            export_button.grid(row=3, column=1, pady=10)
+        else:
+            messagebox.showinfo("Result", "Query executed successfully.")
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"Error executing query:\n{str(e)}")
+
+def export_to_csv(data, column_names):
+    """Export the query results to a CSV file."""
+    try:
+        filename = "output.csv"
+        with open(filename, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(column_names)
+            writer.writerows(data)
+        messagebox.showinfo("Success", f"Data exported to {filename} successfully.")
+    except Exception as e:
+        messagebox.showerror("Error", f"Error exporting data:\n{str(e)}")
+
+def get_table_list():
+    """Retrieve the list of tables in the database."""
+    try:
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+        table_listbox.delete(0, tk.END)
+        for table in tables:
+            table_listbox.insert(tk.END, table[0])
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"Error retrieving table list:\n{str(e)}")
+
+root = tk.Tk()
+root.title("SQLite Query Tool")
+root.geometry("800x600")
+
+# Database Path
+db_path_label = tk.Label(root, text="Database Path:")
+db_path_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
+db_path_entry = tk.Entry(root, width=50)
+db_path_entry.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+
+connect_button = tk.Button(root, text="Connect", command=connect_to_database)
+connect_button.grid(row=0, column=2, padx=10, pady=10)
+
+# Query Entry and Execution
+query_text = tk.Text(root, height=10, width=50)
+query_text.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+
+execute_button = tk.Button(root, text="Execute", command=execute_query)
+execute_button.grid(row=1, column=1, padx=10, pady=10)
+
+# Result Frame
+result_frame = tk.Frame(root)
+result_frame.grid(row=2, column=1, sticky="nsew")
+
+# Table List
+table_list_label = tk.Label(root, text="Tables:")
+table_list_label.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+
+table_listbox = tk.Listbox(root)
+table_listbox.grid(row=2, column=0, padx=10, pady=10, sticky="nsew")
+
+get_table_list()
+
+# Resize Controls
+root.grid_rowconfigure(2, weight=1)
+root.grid_columnconfigure(1, weight=1)
+
+# Status Bar
+status_var = tk.StringVar()
+status_bar = tk.Label(root, textvariable=status_var, bd=1, relief=tk.SUNKEN, anchor=tk.W)
+status_bar.grid(row=4, column=0, columnspan=3, sticky="we")
+
+# Set initial status
+status_var.set("Ready")
+
+root.mainloop()
+
+
+
+
