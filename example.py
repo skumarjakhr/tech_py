@@ -1497,3 +1497,103 @@ root.mainloop()
 
 
 
+
+
+
+
+
+
+
+import tkinter as tk
+from tkinter import ttk
+import pandas as pd
+import sqlite3
+import tkinterdnd2 as tkdnd
+
+
+class TableViewer:
+    def __init__(self, root):
+        self.root = root
+        self.tree = None
+        self.conn = None
+        self.cursor = None
+        self.column_names = []
+
+    def create_table_viewer(self):
+        # Create the Treeview widget
+        self.tree = ttk.Treeview(self.root, show="headings")
+        self.tree.grid(row=0, column=0, sticky="nsew")
+
+        # Enable drag and drop functionality
+        tkdnd.DragSource(self.tree, "text/uri-list")
+
+        # Create a horizontal scrollbar
+        scrollbar = ttk.Scrollbar(self.root, orient="horizontal", command=self.tree.xview)
+        scrollbar.grid(row=1, column=0, sticky="ew")
+        self.tree.configure(xscrollcommand=scrollbar.set)
+
+        # Bind the Treeview selection event
+        self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)
+
+    def connect_to_database(self, db_file):
+        # Connect to the SQLite database
+        self.conn = sqlite3.connect(db_file)
+        self.cursor = self.conn.cursor()
+
+    def execute_query(self, query):
+        # Execute the query
+        self.cursor.execute(query)
+
+        # Fetch column names from the cursor description
+        self.column_names = [desc[0] for desc in self.cursor.description]
+
+        # Fetch all rows from the query result
+        rows = self.cursor.fetchall()
+
+        # Convert the rows to a Pandas DataFrame
+        df = pd.DataFrame(rows, columns=self.column_names)
+
+        # Clear the existing columns in the Treeview
+        self.tree.delete(*self.tree.get_children())
+
+        # Insert the column names as Treeview headings
+        for col in self.column_names:
+            self.tree.heading(col, text=col)
+
+        # Insert the data rows into the Treeview
+        for i, row in df.iterrows():
+            self.tree.insert("", "end", values=row.tolist())
+
+    def on_tree_select(self, event):
+        selected_items = self.tree.selection()
+        if selected_items:
+            selected_values = []
+            for item in selected_items:
+                values = self.tree.item(item, "values")
+                selected_values.append(values)
+            print(selected_values)  # Replace with your desired action
+
+
+# Create the main window
+root = tk.Tk()
+
+# Configure the main window
+root.title("SQLite Table Viewer")
+root.geometry("800x600")
+
+# Create an instance of TableViewer
+table_viewer = TableViewer(root)
+table_viewer.create_table_viewer()
+
+# Connect to the SQLite database
+table_viewer.connect_to_database("your_database.db")
+
+# Execute a SELECT query
+table_viewer.execute_query("SELECT * FROM your_table")
+
+# Start the main event loop
+root.mainloop()
+
+
+
+
