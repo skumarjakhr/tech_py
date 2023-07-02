@@ -1597,3 +1597,217 @@ root.mainloop()
 
 
 
+
+import tkinter as tk
+from tkinter import ttk
+import tkinter.messagebox as messagebox
+
+def create_treeview(root, data, headers=None):
+    # Create Treeview widget
+    tree = ttk.Treeview(root)
+    tree.pack(fill="both", expand=True)
+
+    # Add scrollbars to the Treeview
+    tree_scrollbar_y = ttk.Scrollbar(root, orient="vertical", command=tree.yview)
+    tree_scrollbar_y.pack(side="right", fill="y")
+    tree_scrollbar_x = ttk.Scrollbar(root, orient="horizontal", command=tree.xview)
+    tree_scrollbar_x.pack(side="bottom", fill="x")
+    tree.configure(yscrollcommand=tree_scrollbar_y.set, xscrollcommand=tree_scrollbar_x.set)
+
+    # Insert headers if provided
+    if headers:
+        tree["columns"] = headers
+        for header in headers:
+            tree.heading(header, text=header)
+
+    # Insert data rows into the Treeview
+    for row in data:
+        tree.insert("", "end", values=row)
+
+    return tree
+
+def copy_selected_data(event=None):
+    selected_items = treeview.selection()
+    if selected_items:
+        selected_data = []
+        if headers:
+            if include_headers.get():
+                selected_data.append(headers)
+        for item in selected_items:
+            values = treeview.item(item)["values"]
+            if not values:
+                continue
+            selected_data.append(values)
+
+        copied_text = ""
+        if selected_data:
+            copied_text = "\n".join(["\t".join(map(str, row)) for row in selected_data])
+
+        root.clipboard_clear()
+        root.clipboard_append(copied_text)
+
+def select_all(event=None):
+    treeview.selection_set(treeview.get_children())
+
+def clear_selection(event=None):
+    treeview.selection_remove(treeview.selection())
+
+def show_context_menu(event):
+    item = treeview.identify("item", event.x, event.y)
+    if item:
+        treeview.selection_set(item)
+
+        menu = tk.Menu(root, tearoff=0)
+        menu.add_command(label="Copy with Headers", command=copy_selected_data)
+        menu.add_command(label="Copy without Headers", command=lambda: copy_selected_data(include_headers=False))
+        menu.tk_popup(event.x_root, event.y_root)
+
+# Example usage
+root = tk.Tk()
+root.geometry("400x300")
+
+data = [
+    ("John Doe", 30, "john.doe@example.com"),
+    ("Jane Smith", 25, "jane.smith@example.com"),
+    ("Mike Johnson", 35, "mike.johnson@example.com")
+]
+headers = ["Name", "Age", "Email"]
+
+treeview = create_treeview(root, data, headers)
+
+# Enable multiple selection
+treeview.configure(selectmode="extended")
+
+# Bind Ctrl+A to select all items
+root.bind("<Control-a>", select_all)
+
+# Bind Ctrl+C to copy selected data
+root.bind("<Control-c>", copy_selected_data)
+
+# Bind Right-click to show context menu
+treeview.bind("<Button-3>", show_context_menu)
+
+include_headers = tk.BooleanVar()
+include_headers.set(True)
+
+# Checkbox to include headers when copying
+checkbox = ttk.Checkbutton(root, text="Include Headers", variable=include_headers)
+checkbox.pack()
+
+root.mainloop()
+
+
+
+import tkinter as tk
+import subprocess
+
+def execute_command():
+    command = input_entry.get()
+    output = subprocess.check_output(command, shell=True).decode('utf-8')
+    output_text.insert('end', output)
+
+root = tk.Tk()
+
+# Create a Text widget for output display
+output_text = tk.Text(root)
+output_text.pack(fill='both', expand=True)
+
+# Create an Entry widget for command input
+input_entry = tk.Entry(root)
+input_entry.pack(fill='x')
+
+# Create a button to execute the command
+execute_button = tk.Button(root, text='Execute', command=execute_command)
+execute_button.pack()
+
+root.mainloop()
+
+
+
+import tkinter as tk
+import paramiko
+
+def connect_ssh():
+    host = host_entry.get()
+    username = username_entry.get()
+    password = password_entry.get()
+
+    # Create an SSH client
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    try:
+        # Connect to the SSH server
+        ssh.connect(host, username=username, password=password)
+        output_text.insert('end', f"Connected to {host}\n")
+        
+        # Create an interactive shell
+        shell = ssh.invoke_shell()
+        shell.send("\n")
+
+        def send_command(event):
+            command = command_entry.get()
+            shell.send(command + "\n")
+            command_entry.delete(0, 'end')
+
+        def receive_output():
+            while shell.recv_ready():
+                output = shell.recv(1024).decode('utf-8')
+                output_text.insert('end', output)
+                output_text.see('end')
+
+            output_text.after(100, receive_output)
+
+        # Bind the command sending function to the Enter key
+        command_entry.bind("<Return>", send_command)
+
+        # Start receiving output from the shell
+        receive_output()
+
+    except paramiko.AuthenticationException:
+        output_text.insert('end', "Authentication failed\n")
+    except paramiko.SSHException as e:
+        output_text.insert('end', f"SSH error: {str(e)}\n")
+    except paramiko.socket.error as e:
+        output_text.insert('end', f"Socket error: {str(e)}\n")
+    finally:
+        # Close the SSH connection
+        ssh.close()
+
+root = tk.Tk()
+
+# Hostname entry
+host_label = tk.Label(root, text="Hostname:")
+host_label.pack()
+host_entry = tk.Entry(root)
+host_entry.pack()
+
+# Username entry
+username_label = tk.Label(root, text="Username:")
+username_label.pack()
+username_entry = tk.Entry(root)
+username_entry.pack()
+
+# Password entry
+password_label = tk.Label(root, text="Password:")
+password_label.pack()
+password_entry = tk.Entry(root, show='*')
+password_entry.pack()
+
+# Connect button
+connect_button = tk.Button(root, text="Connect", command=connect_ssh)
+connect_button.pack()
+
+# Output text area
+output_text = tk.Text(root)
+output_text.pack(fill='both', expand=True)
+
+# Command entry
+command_entry = tk.Entry(root)
+command_entry.pack()
+
+root.mainloop()
+
+
+
+
