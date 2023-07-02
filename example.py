@@ -1453,3 +1453,47 @@ root.mainloop()
 
 
 
+import tkinter as tk
+from tkinter import ttk
+import sqlite3
+
+# Create the main window
+root = tk.Tk()
+
+# Create a Treeview widget
+tree = ttk.Treeview(root)
+
+# Connect to the SQLite database
+conn = sqlite3.connect("your_database.db")
+cursor = conn.cursor()
+
+# Execute a SELECT query
+cursor.execute("SELECT * FROM your_table")
+
+# Fetch column names from the cursor description
+column_names = [desc[0] for desc in cursor.description]
+
+# Configure the Treeview columns based on the column names
+tree["columns"] = column_names
+for col in column_names:
+    tree.heading(col, text=col)
+
+# Fetch all rows from the query result
+rows = cursor.fetchall()
+
+# Iterate over the rows and insert them into the Treeview
+for row in rows:
+    tree.insert("", "end", values=row)
+
+# Close the database connection
+conn.close()
+
+# Pack the Treeview widget
+tree.pack()
+
+# Start the main event loop
+root.mainloop()
+
+
+
+
