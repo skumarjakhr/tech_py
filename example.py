@@ -1810,4 +1810,59 @@ root.mainloop()
 
 
 
+import tkinter as tk
+from tkinter import ttk
+import threading
+import time
+
+threads = {}
+
+def start_thread(tab, tab_name, label_var):
+    stop_event = threading.Event()
+    def run(stop_event):
+        while not stop_event.is_set():
+            current_time = time.strftime("%H:%M:%S")
+            label_var.set(f"{tab_name}: Running... Time: {current_time}")
+            time.sleep(2)
+    thread = threading.Thread(target=run, args=(stop_event,))
+    thread.start()
+    threads[tab_name] = (thread, stop_event)
+
+def stop_thread(tab_name, label_var):
+    thread, stop_event = threads.get(tab_name, (None, None))
+    if thread and stop_event:
+        stop_event.set()
+        thread.join()
+        label_var.set(f"{tab_name}: Stopped.")
+
+root = tk.Tk()
+root.title("Multiple Threads Example")
+
+tab_control = ttk.Notebook(root)
+
+# Create tabs
+tabs = ["Tab 1", "Tab 2", "Tab 3"]
+
+for tab_name in tabs:
+    tab = ttk.Frame(tab_control)
+    tab_control.add(tab, text=tab_name)
+
+    label_var = tk.StringVar()
+    label_var.set(f"{tab_name}: Not running")
+
+    label = ttk.Label(tab, textvariable=label_var)
+    label.pack(padx=20, pady=20)
+
+    start_button = ttk.Button(tab, text="Start Thread", command=lambda tab=tab, name=tab_name, var=label_var: start_thread(tab, name, var))
+    start_button.pack(padx=20, pady=5)
+
+    stop_button = ttk.Button(tab, text="Stop Thread", command=lambda name=tab_name, var=label_var: stop_thread(name, var))
+    stop_button.pack(padx=20, pady=5)
+
+    threads[tab_name] = (None, None)  # Initialize thread and stop event
+
+# Pack the tab control
+tab_control.pack(expand=True, fill="both")
+
+root.mainloop()
 
