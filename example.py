@@ -1866,3 +1866,177 @@ tab_control.pack(expand=True, fill="both")
 
 root.mainloop()
 
+
+
+import tkinter as tk
+from tkinter import ttk
+global root
+root = tk.Tk()
+global controls
+controls={}
+global controlsframe
+controlsframe={}
+
+def add_scrollbar(widget, use_vertical=True, use_horizontal=True):
+    if use_vertical:
+        # Create a vertical scrollbar
+        scrollbar_y = ttk.Scrollbar(widget, orient=tk.VERTICAL)
+        scrollbar_y.pack(side=tk.RIGHT, fill=tk.Y)
+        widget.configure(yscrollcommand=scrollbar_y.set)
+        scrollbar_y.configure(command=widget.yview)
+
+    if use_horizontal:
+        # Create a horizontal scrollbar
+        scrollbar_x = ttk.Scrollbar(widget, orient=tk.HORIZONTAL)
+        scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
+        widget.configure(xscrollcommand=scrollbar_x.set)
+        scrollbar_x.configure(command=widget.xview)
+
+def mainGui(title,mainsize):
+    root.title(title)
+    root.geometry(mainsize)  # Set the default size of the window
+    global notebook
+    notebook = ttk.Notebook(root)
+    notebook.pack(fill=tk.BOTH, expand=True)
+    mstyle = ttk.Style()
+    mstyle.configure("Custom.TNotebook.Tab", background="blue")
+    
+    #Add Frame
+    tablist=['CSIA','Hive','Local','Settings','Admin']
+    def add_frames(num,tablist):
+        for n,name in enumerate(tablist):
+            control=ttk.Frame(notebook,name=name.lower())
+            notebook.add(control, text=name)
+            notebook.tab(control)
+            
+            controls[name.lower()]=control
+            
+            framelist=['side','top','bottom']
+            bgcolor=['blue','green','red']
+            tabb=control#controls['hive']
+            print(tabb)
+            def add_frames_tab(framelist,tab,tabname):
+                for n,(name,clr) in enumerate(zip(framelist,bgcolor)):
+                    style = ttk.Style()
+                    style.configure("Custom.TFrame", background=clr)
+                    controlframe=tk.Text(tabb,name=tabname.lower()+name.lower(),borderwidth=3)
+                    controlframe.grid(row=2, column=2, padx=5, pady=5, sticky="n")
+                    
+                    #controlframe2=tk.Listbox(tabb,name=tabname.lower()+name.lower(),borderwidth=3,height=30, width=40)
+                    #controlframe2.grid(row=2, column=10, padx=5, pady=5, sticky="n")
+                    
+                    #root.grid_rowconfigure(0, weight=1)
+                    #root.grid_columnconfigure(0, weight=1)
+                    print(clr)
+                    
+                    controlsframe[tabname.lower()+name.lower()]=controlframe
+                    print(controlframe)
+    
+            #add_frames_tab(framelist,tabb,name)
+            
+            def design_tab(tabb):
+                frame1=tk.Frame(tabb,borderwidth=3,bg="red")
+                frame2=tk.Frame(tabb,borderwidth=3,width=10,height=300)
+                frame3=tk.Frame(tabb,borderwidth=3,height=30)
+                frame4=tk.Frame(tabb,borderwidth=3)
+                frame5=tk.Frame(tabb,borderwidth=3)
+                #frame1.pack(side=tk.TOP,fill="both")
+                frame3.pack(side=tk.BOTTOM,fill="x",expand=False)
+                frame1.pack(side=tk.TOP,fill="x",expand=False)
+                #frame3.pack(side=tk.BOTTOM,fill=tk.BOTH,expand=True)
+                frame2.pack(side=tk.LEFT,fill=tk.BOTH,expand=False)
+                #frame2.grid(row=0, column=1, sticky="nsew")
+                
+                frame5.pack(side=tk.LEFT,fill=tk.BOTH,expand=True)
+                frame4.pack(side=tk.RIGHT,fill=tk.BOTH,expand=True)
+                
+                
+                
+                labelf1=tk.Label(frame1,text="Controls")
+                labelf2=tk.Label(frame2,text="TableList")
+                labelf3=ttk.Label(frame3,text="Execution Logs")
+                labelf4=tk.Label(frame4,text="Viewer")
+                labelf5=tk.Label(frame5,text="Query Editor")
+                
+                labelf1.pack(side=tk.TOP,expand=False)
+                labelf2.pack(side=tk.TOP,expand=False)
+                #labelf3.pack(side=tk.TOP,expand=False)
+                labelf4.pack(side=tk.TOP,expand=False)
+                labelf5.pack(side=tk.TOP,expand=False)
+                
+                tablelist=tk.Listbox(frame2,width=30)
+                
+                tablelist.pack(side=tk.TOP,fill="both",expand=True)
+                #add_scrollbar(frame2,True,True)
+                tablelist.insert(tk.END, "Table List Below")
+                
+                querywin=tk.Text(frame5,borderwidth=3)
+                add_scrollbar(querywin)
+                querywin.pack(side=tk.BOTTOM,fill="both",expand=True)
+                outputq=ttk.Treeview(frame4)
+                add_scrollbar(outputq)
+                outputq.pack(side=tk.TOP,fill="both",expand=True)
+                logtxt=tk.Text(frame3,borderwidth=3,height=40)
+                #logtxt=tk.Text(frame2,borderwidth=3,height=40)
+                add_scrollbar(logtxt)
+                
+                logtxt.pack(side=tk.LEFT,fill="x",expand=True)
+                buttonexe=tk.Button(frame1,text="Execute Query",borderwidth=3)
+                buttonexe.pack(side=tk.LEFT)
+                logtxt2=tk.Text(frame3,borderwidth=3,height=40)
+                logtxt3=tk.Text(frame3,borderwidth=3,height=40)
+                add_scrollbar(logtxt2)
+                add_scrollbar(logtxt3)
+                logtxt2.pack(side=tk.LEFT,fill="both",expand=True)
+                logtxt3.pack(side=tk.LEFT,fill="both",expand=True)
+                
+                buttonexe2=tk.Button(frame1,text="Import Data",borderwidth=3)
+                buttonexe2.pack(side=tk.LEFT)
+                
+                buttonexe3=tk.Button(frame1,text="Refresh Tables List",borderwidth=3)
+                buttonexe3.pack(side=tk.LEFT)
+                
+                buttonexe4=tk.Button(frame1,text="Blank",borderwidth=3)
+                buttonexe4.pack(side=tk.LEFT)
+                
+                buttonexe5=tk.Button(frame1,text="Blank",borderwidth=3)
+                buttonexe5.pack(side=tk.LEFT)
+            
+            design_tab(control)
+                
+
+
+    
+    data = ["Apple", "Banana", "Orange", "Grape", "Mango"]
+    
+    def frame_controls(slaveframe,data):
+        
+        # Create a listbox
+        table=ttk.Treeview(tab1)
+        table.pack(side=tk.BOTTOM)
+        listbox = tk.Listbox(slaveframe)
+        listbox.pack()
+
+        # Insert data into the listbox
+        for item in data:
+            listbox.insert(tk.END, item)
+    
+    add_frames(4,tablist)   
+    #add_frames_tab    
+    #frame_controls(tab1,data)
+    
+    def test():
+    
+        print(controls['hive'])
+        
+   
+    #test()    
+    
+
+
+
+mainGui("Kumar's","800x600")
+
+root.mainloop()
+
+
