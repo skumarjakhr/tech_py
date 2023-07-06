@@ -2062,3 +2062,50 @@ if __name__ == "__main__":
     app.exec_()
 
 
+
+
+from PyQt5.QtCore import QUrl
+from PyQt5.QtWidgets import QApplication, QMainWindow, QToolBar, QLineEdit, QPushButton
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineCore import QWebEngineHttpRequest
+
+class BrowserWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Python Web Browser")
+        self.browser = QWebEngineView()
+        self.setCentralWidget(self.browser)
+        self.showMaximized()
+
+        toolbar = QToolBar()
+        self.addToolBar(toolbar)
+
+        self.url_entry = QLineEdit()
+        self.go_button = QPushButton("Go")
+        self.back_button = QPushButton("Back")
+
+        toolbar.addWidget(self.url_entry)
+        toolbar.addWidget(self.go_button)
+        toolbar.addWidget(self.back_button)
+
+        self.go_button.clicked.connect(self.go_button_clicked)
+        self.back_button.clicked.connect(self.back_button_clicked)
+
+    def go_button_clicked(self):
+        url = self.url_entry.text()
+        self.load_page(url)
+
+    def back_button_clicked(self):
+        self.browser.back()
+
+    def load_page(self, url):
+        request = QWebEngineHttpRequest(QUrl(url))
+        self.browser.load(request)
+
+if __name__ == "__main__":
+    app = QApplication([])
+    window = BrowserWindow()
+    window.load_page("https://www.example.com")
+    app.exec_()
+
+
