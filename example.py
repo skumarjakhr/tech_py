@@ -2040,3 +2040,25 @@ mainGui("Kumar's","800x600")
 root.mainloop()
 
 
+from PyQt5.QtCore import QUrl
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+
+class BrowserWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Python Web Browser")
+        self.browser = QWebEngineView()
+        self.setCentralWidget(self.browser)
+        self.showMaximized()
+
+    def load_page(self, url):
+        self.browser.setUrl(QUrl(url))
+
+if __name__ == "__main__":
+    app = QApplication([])
+    window = BrowserWindow()
+    window.load_page("https://www.google.com")
+    app.exec_()
+
+
