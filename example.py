@@ -2269,7 +2269,10 @@ class WebBrowser(QMainWindow):
         # Create the web view
         self.web_view = QWebEngineView(self)
         self.web_view.setGeometry(10, 50, 780, 540)
-        self.web_view.page().profile().downloadRequested.connect(self.download_requested)
+        profile = QWebEngineProfile.defaultProfile()
+        profile.downloadRequested.connect(self.download_requested)
+
+        #self.web_view.page().profile().downloadRequested.connect(self.download_requested)
 
     def load_url(self):
         url = QUrl(self.url_input.text())
@@ -2289,4 +2292,85 @@ def run_web_browser():
 
 # Run the web browser
 run_web_browser()
+
+
+
+
+import sys
+from PyQt5.QtCore import QUrl
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QTabWidget
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+
+class WebBrowser(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Web Browser")
+        self.setGeometry(100, 100, 800, 600)
+
+        # Create the URL input field
+        self.url_input = QLineEdit(self)
+        self.url_input.returnPressed.connect(self.load_url)
+
+        # Create the "Go" button
+        self.go_button = QPushButton("Go")
+        self.go_button.clicked.connect(self.load_url)
+
+        # Create the layout for the URL input and button
+        url_layout = QVBoxLayout()
+        url_layout.addWidget(self.url_input)
+        url_layout.addWidget(self.go_button)
+
+        # Create the central widget
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+
+        # Create the tab widget
+        self.tab_widget = QTabWidget()
+        self.tab_widget.currentChanged.connect(self.tab_changed)
+
+        # Create the layout for the central widget
+        layout = QVBoxLayout(self.central_widget)
+        layout.addLayout(url_layout)
+        layout.addWidget(self.tab_widget)
+
+        # Create the initial tab
+        self.add_new_tab()
+
+    def add_new_tab(self, url=None):
+        # Create a new instance of QWebEngineView
+        web_view = QWebEngineView()
+
+        # Connect the createWindow signal to handle new tab requests
+        web_view.page().profile().createWindow.connect(self.handle_new_tab_request)
+
+        # Add the new tab to the tab widget
+        self.tab_widget.addTab(web_view, "New Tab")
+
+        # Load the URL in the new tab if provided
+        if url:
+            web_view.load(QUrl(url))
+
+    def load_url(self):
+        url = self.url_input.text()
+        self.add_new_tab(url)
+
+    def handle_new_tab_request(self, window_type):
+        # Handle the creation of a new tab or window
+        if window_type == QWebEnginePage.WebBrowserTab:
+            self.add_new_tab()
+
+    def tab_changed(self, index):
+        # Do something when a tab is changed
+        print("Tab changed to index:", index)
+
+def run_web_browser():
+    app = QApplication(sys.argv)
+    browser = WebBrowser()
+    browser.show()
+    sys.exit(app.exec_())
+
+# Run the web browser
+run_web_browser()
+
 
