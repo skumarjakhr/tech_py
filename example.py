@@ -2232,3 +2232,61 @@ def login_to_webpage(url, username, password):
 # Example usage
 login_to_webpage("https://www.facebook.com/login", "your_username", "your_password")
 
+
+
+
+
+
+
+import sys
+from PyQt5.QtCore import QUrl
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QTextEdit
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEngineProfile
+
+class WebBrowser(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Web Browser")
+        self.setGeometry(100, 100, 800, 600)
+
+        # Create the URL input field
+        self.url_input = QLineEdit(self)
+        self.url_input.returnPressed.connect(self.load_url)
+        self.url_input.setGeometry(10, 10, 600, 30)
+
+        # Create the "Go" button
+        self.go_button = QPushButton("Go", self)
+        self.go_button.clicked.connect(self.load_url)
+        self.go_button.setGeometry(620, 10, 80, 30)
+
+        # Create the "Back" button
+        self.back_button = QPushButton("Back", self)
+        self.back_button.clicked.connect(self.web_view.back)
+        self.back_button.setGeometry(710, 10, 80, 30)
+
+        # Create the web view
+        self.web_view = QWebEngineView(self)
+        self.web_view.setGeometry(10, 50, 780, 540)
+        self.web_view.page().profile().downloadRequested.connect(self.download_requested)
+
+    def load_url(self):
+        url = QUrl(self.url_input.text())
+        self.web_view.load(url)
+
+    def download_requested(self, download):
+        # Set the download path to the default download directory
+        download_path = download.path()
+        download.setPath(download_path)
+        download.accept()
+
+def run_web_browser():
+    app = QApplication(sys.argv)
+    browser = WebBrowser()
+    browser.show()
+    sys.exit(app.exec_())
+
+# Run the web browser
+run_web_browser()
+
