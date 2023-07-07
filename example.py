@@ -2199,3 +2199,36 @@ if __name__ == "__main__":
  <resources/>
  <connections/>
 </ui>
+
+
+import sys
+from PyQt5.QtCore import QUrl
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+
+def login_to_webpage(url, username, password):
+    app = QApplication(sys.argv)
+
+    view = QWebEngineView()
+    view.load(QUrl(url))
+
+    def page_loaded():
+        # Inject JavaScript to fill in the username and password fields
+        view.page().runJavaScript(
+            '''
+            document.getElementById('uid').value = '{0}';
+            document.getElementById('pwd').value = '{1}';
+            // Remove the following line if you don't want to submit the form automatically
+            document.getElementById('login-form').submit();
+            '''.format(username, password)
+        )
+
+    # When the page finishes loading, trigger the login process
+    view.page().loadFinished.connect(page_loaded)
+
+    # Run the application event loop
+    sys.exit(app.exec_())
+
+# Example usage
+login_to_webpage("https://www.facebook.com/login", "your_username", "your_password")
+
