@@ -2374,3 +2374,44 @@ def run_web_browser():
 run_web_browser()
 
 
+
+import sys
+from PyQt5.QtCore import QUrl
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
+
+
+class WebBrowser(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Web Browser")
+        self.tab_widget = QTabWidget()
+        self.setCentralWidget(self.tab_widget)
+
+        self.new_tab("https://www.google.com")
+
+    def new_tab(self, url):
+        web_view = WebView()
+        web_view.load(QUrl(url))
+        self.tab_widget.addTab(web_view, "New Tab")
+
+
+class WebView(QWebEngineView):
+    def createWindow(self, windowType):
+        if windowType == QWebEnginePage.WebBrowserTab or windowType == QWebEnginePage.WebBrowserBackgroundTab:
+            web_browser = self.parent().parent()  # Access the WebBrowser instance
+            web_browser.new_tab(self.requestedUrl().toString())
+            return self
+
+        return super().createWindow(windowType)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    browser = WebBrowser()
+    browser.show()
+    sys.exit(app.exec_())
+
+
+
