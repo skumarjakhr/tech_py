@@ -2434,3 +2434,50 @@ table_name = 'your_table_name'
 df.to_sql(name=table_name, con=engine, schema=schema_name, if_exists='replace', index=False)
 
 print(f"Table '{schema_name}.{table_name}' created successfully.")
+
+
+
+import psycopg2
+
+# Connect to PostgreSQL
+db_connection = psycopg2.connect(
+    dbname='database_name',
+    user='username',
+    password='password',
+    host='host',
+    port='port'
+)
+
+# Define Schema and Table Name
+schema_name = 'tmp'
+table_name = 'your_table_name'
+
+# Assume you read the entire CSV data into a variable (csv_data)
+
+# Split the CSV data into header and data
+lines = csv_data.strip().split('\n')
+header = lines[0]
+data = '\n'.join(lines[1:])
+
+# Create the table using the header
+create_table_sql = f"""
+    CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
+        {', '.join(f'"{col}" TEXT' for col in header.split('\t'))}
+    );
+"""
+
+with db_connection.cursor() as cursor:
+    cursor.execute(create_table_sql)
+    db_connection.commit()
+
+# Use the COPY command to insert data using STDIN
+copy_sql = f"COPY {schema_name}.{table_name} FROM STDIN WITH CSV DELIMITER as '\t'"
+with db_connection.cursor() as cursor:
+    cursor.copy_expert(sql=copy_sql, file=data)
+
+# Commit changes and close the connection
+db_connection.commit()
+db_connection.close()
+
+print(f"Table '{schema_name}.{table_name}' created and populated successfully.")
+
