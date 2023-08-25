@@ -2415,3 +2415,22 @@ if __name__ == "__main__":
 
 
 
+import pandas as pd
+from sqlalchemy import create_engine
+
+# Load CSV into DataFrame
+csv_file_path = 'path_to_your_csv_file.csv'
+df = pd.read_csv(csv_file_path)
+
+# Connect to PostgreSQL
+db_url = 'postgresql://username:password@host:port/database_name'
+engine = create_engine(db_url)
+
+# Define Schema and Table Name
+schema_name = 'tmp'
+table_name = 'your_table_name'
+
+# Use df.to_sql to Create Table
+df.to_sql(name=table_name, con=engine, schema=schema_name, if_exists='replace', index=False)
+
+print(f"Table '{schema_name}.{table_name}' created successfully.")
