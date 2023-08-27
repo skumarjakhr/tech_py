@@ -2481,3 +2481,82 @@ db_connection.close()
 
 print(f"Table '{schema_name}.{table_name}' created and populated successfully.")
 
+
+from playwright.sync_api import sync_playwright
+
+def main():
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False)  # Set headless to True for headless mode
+        context = browser.new_context()
+
+        # Create a new page
+        page = context.new_page()
+
+        # Navigate to the webpage
+        page.goto('https://moneymint.com/list-of-banks-in-india/')
+
+        # Input data in a text box
+        input_selector = 'input#textbox-id'  # Replace with the actual selector of the text box
+        data_to_input = 'Your data here'
+        page.fill(input_selector, data_to_input)
+
+        # Click the button
+        button_selector = 'button#button-id'  # Replace with the actual selector of the button
+        page.click(button_selector)
+
+        # Wait for processing to complete (adjust as needed)
+        page.wait_for_timeout(5000)  # Wait for 5 seconds, adjust as needed
+
+        # Scrape data from the page
+        scraped_data = page.text_content()  # This will scrape the entire page content
+
+        print(scraped_data)
+
+        # Close the page and context
+        page.close()
+        context.close()
+
+if __name__ == '__main__':
+    main()
+
+
+
+
+import requests
+from bs4 import BeautifulSoup
+
+# Replace these with the actual URLs
+base_url = "https://example.com"
+get_url = base_url + "/page-with-query-form"
+post_url = base_url + "/post-endpoint"
+
+# Initialize a session to maintain cookies and session data
+session = requests.Session()
+
+# First, send a GET request to the page with the query form
+response_get = session.get(get_url)
+soup = BeautifulSoup(response_get.text, "html.parser")
+
+# Extract the required form fields (replace with actual field names)
+view_state = soup.find("input", {"id": "__VIEWSTATE"})["value"]
+event_target = "some-event-target-value"
+event_argument = "some-event-argument-value"
+
+# Prepare the POST data including the query
+post_data = {
+    "__VIEWSTATE": view_state,
+    "__EVENTTARGET": event_target,
+    "__EVENTARGUMENT": event_argument,
+    "query_input_name": "your-sql-query-here"
+    # Add other required form fields here
+}
+
+# Send the POST request with the prepared data
+response_post = session.post(post_url, data=post_data)
+
+# Process the response (replace with actual parsing logic)
+parsed_data = response_post.text  # Use BeautifulSoup or any other parsing library
+
+print(parsed_data)
+
+
