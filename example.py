@@ -2560,3 +2560,11 @@ parsed_data = response_post.text  # Use BeautifulSoup or any other parsing libra
 print(parsed_data)
 
 
+        download_options = {
+            'path': download_path,
+            'saveAs': True  # Ensure the file is saved with the original name
+        }
+
+        # Download the file
+        page.download_url(download_url, **download_options)
+
