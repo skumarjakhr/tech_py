@@ -2568,3 +2568,18 @@ print(parsed_data)
         # Download the file
         page.download_url(download_url, **download_options)
 
+
+
+def download_file(url, download_folder):
+    response = requests.get(url)
+    if response.status_code == 200:
+        file_name = url.split('/')[-1]  # Extract the file name from the URL
+        file_path = os.path.join(download_folder, file_name)
+
+        with open(file_path, 'wb') as file:
+            file.write(response.content)
+        
+        print(f'File downloaded to: {file_path}')
+    else:
+        print(f'Failed to download file from {url}')
+
