@@ -2583,3 +2583,55 @@ def download_file(url, download_folder):
     else:
         print(f'Failed to download file from {url}')
 
+
+from pyhive import hive
+import os
+import pandas as pd
+
+# Hive connection
+conn = hive.Connection(host='your_host', port=10000, username='your_username', database='your_database')
+cursor = conn.cursor()
+
+# Query execution
+query = "SELECT * FROM your_table"
+cursor.execute(query)
+
+# Parameters
+batch_size = 10000  # Adjust this based on row size to fit your 10 GB limit
+file_index = 1
+output_dir = 'output_directory/'
+
+def check_previous_file_moved(file_index):
+    """Check if the previous file has been moved."""
+    previous_file = f'{output_dir}batch_{file_index}.csv'
+    return not os.path.exists(previous_file)
+
+while True:
+    # Fetch the batch of rows
+    rows = cursor.fetchmany(batch_size)
+    
+    # Break the loop if no more data
+    if not rows:
+        break
+    
+    # Wait for the previous file to be moved if necessary
+    while not check_previous_file_moved(file_index - 1):
+        print(f"Waiting for batch_{file_index - 1}.csv to be moved...")
+    
+    # Convert to DataFrame for easier file handling
+    df = pd.DataFrame(rows, columns=[desc[0] for desc in cursor.description])
+    
+    # Write the batch to a CSV file
+    output_file = f'{output_dir}batch_{file_index}.csv'
+    df.to_csv(output_file, index=False)
+    
+    print(f'Batch {file_index} written to {output_file}')
+    
+    # Increment the file index
+    file_index += 1
+
+# Close the cursor and connection
+cursor.close()
+conn.close()
+
+
