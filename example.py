@@ -2635,3 +2635,13 @@ cursor.close()
 conn.close()
 
 
+def count_rows(file_path):
+    with open(file_path, 'r') as file:
+        row_count = sum(1 for _ in file)
+    return row_count
+
+row_count = count_rows('large_file.csv')
+print(f'Total rows: {row_count}')
+
+
+
