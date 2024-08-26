@@ -1,3 +1,40 @@
+import pandas as pd
+import csv
+
+def extract_columns_chunked(file_path, output_path, chunk_size):
+    """
+    Extract specified columns from a large CSV file in chunks and save them to a new CSV file.
+    
+    :param file_path: Path to the input CSV file.
+    :param output_path: Path to save the output CSV file with selected columns.
+    :param columns: List of columns to extract (can be column names or indices).
+    :param chunk_size: Number of rows per chunk to read from the large file.
+    """
+    
+
+    user_input = input("Enter the column indices you want to extract, separated by commas: ")
+    cols= [int(x.strip()) for x in user_input.split(',')]
+
+    chunk_iter = pd.read_csv(file_path, usecols=cols, chunksize=chunk_size)
+
+    for i, chunk in enumerate(chunk_iter):
+        if i == 0:
+            chunk.to_csv(output_path, index=False, mode='w')
+        else:
+            chunk.to_csv(output_path, index=False, mode='a', header=False)
+
+# Example usage
+input_file = input("Please provide the file name with path : ")
+output_file = input_file.replace(".csv","")+"_col_extracted_output.csv"
+chunk_size_glbl=int(input("Please provide Batch size eg(100000): "))
+
+extract_columns_chunked(input_file, output_file,chunk_size_glbl)
+
+
+
+
+
+
 data = {'Name': ['John', 'Alice', 'Bob'],
         'Age': [25, 30, 35],
         'City': ['New York', 'London', 'Paris']}
