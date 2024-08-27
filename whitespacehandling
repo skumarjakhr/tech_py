@@ -1,0 +1,23 @@
+import pandas as pd
+
+# Sample DataFrame
+data = {
+    'Column1': ['   hello ', ' world   ', '   pandas  ', '  data '],
+    'Column2': ['  foo  ', ' bar ', ' baz  ', ' qux   ']
+}
+
+df = pd.DataFrame(data)
+
+# Function to strip leading and trailing white spaces and remove extra spaces in between
+def clean_spaces(x):
+    if isinstance(x, str):  # Check if the value is a string
+        return ' '.join(x.split())
+    return x  # If not a string, return the value as is
+
+# Apply the function to the entire DataFrame
+df_cleaned = df.applymap(clean_spaces)
+
+print("Original DataFrame:")
+print(df)
+print("\nCleaned DataFrame:")
+print(df_cleaned)
