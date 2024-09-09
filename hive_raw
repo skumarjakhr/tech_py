@@ -1,0 +1,61 @@
+import pandas as pd
+from pyhive import hive
+import subprocess
+from retrying import retry
+
+# Function to check if VPN is connected by pinging a URL
+def is_vpn_connected():
+    try:
+        # Ping the URL of your host to check if VPN is connected
+        vpn_ping = subprocess.run(['ping', '-c', '1', 'your_vpn_host_url'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if vpn_ping.returncode == 0:
+            print("VPN is connected.")
+            return True
+        else:
+            print("VPN is not connected.")
+            return False
+    except Exception as e:
+        print(f"Error checking VPN: {e}")
+        return False
+
+# Function to establish Hive connection
+@retry(wait_fixed=5000, stop_max_delay=300000)  # Retry every 5 seconds, for up to 5 minutes
+def connect_to_hive():
+    if not is_vpn_connected():
+        print("VPN not connected. Waiting for VPN...")
+        raise Exception("VPN not connected")
+    
+    # Connect to Hive
+    conn = hive.Connection(host='your_hive_server', port=10000, username='your_username', database='your_database')
+    return conn
+
+# Function to query Hive and write to CSV
+def query_hive_to_csv(query, output_file):
+    try:
+        # Connect to Hive server
+        conn = connect_to_hive()
+
+        # Query the data
+        df = pd.read_sql(query, conn)
+
+        # Write to CSV with headers
+        df.to_csv(output_file, index=False, header=True)
+        print(f"Data successfully written to {output_file}")
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+# Example Query (Modify as needed)
+hive_query = """
+SELECT * FROM your_table
+LIMIT 1000;
+"""
+
+# Output CSV file path
+output_csv = 'hive_data.csv'
+
+# Query the data and write it to CSV
+query_hive_to_csv(hive_query, output_csv)
